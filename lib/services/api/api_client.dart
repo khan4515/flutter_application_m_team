@@ -140,6 +140,7 @@ class ApiClient {
         final tids = searchResult.items.map((item) => item.id).toList();
         final historyData = await queryHistory(tids: tids);
         final historyMap = historyData['historyMap'] as Map<String, dynamic>? ?? {};
+        final peerMap = historyData['peerMap'] as Map<String, dynamic>? ?? {};
         
         // Update items with download status
         final updatedItems = searchResult.items.map((item) {
@@ -147,7 +148,13 @@ class ApiClient {
           if (historyMap.containsKey(item.id)) {
             final history = historyMap[item.id] as Map<String, dynamic>;
             final timesCompleted = int.tryParse(history['timesCompleted']?.toString() ?? '0') ?? 0;
-            status = timesCompleted > 0 ? DownloadStatus.completed : DownloadStatus.downloading;
+            if (timesCompleted > 0) {
+              status = DownloadStatus.completed;
+            } else if (peerMap.containsKey(item.id)) {
+              status = DownloadStatus.downloading;
+            } else {
+              status = DownloadStatus.none;
+            }
           }
           return TorrentItem(
             id: item.id,
