@@ -566,9 +566,7 @@ class _HomePageState extends State<HomePage> {
       final clientConfig = result['clientConfig'] as QbClientConfig;
       final password = result['password'] as String;
       final category = result['category'] as String?;
-      final tagsList = result['tags'] as List<String>?;
-      // 去掉标签外层的[]包裹，然后转换为List
-      final tags = tagsList?.map((tag) => tag.replaceAll(RegExp(r'^\[|\]$'), '')).toList();
+      final tags = result['tags'] as List<String>?;
       final savePath = result['savePath'] as String?;
       final autoTMM = result['autoTMM'] as bool?;
       
