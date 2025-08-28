@@ -40,6 +40,7 @@ class QbClientConfig {
   final int port;
   final String username;
   final String? password; // stored securely, may be null when loaded from prefs-only
+  final bool useLocalRelay; // 是否启用本地中转，先下载种子文件再提交给qBittorrent
 
   const QbClientConfig({
     required this.id,
@@ -48,6 +49,7 @@ class QbClientConfig {
     required this.port,
     required this.username,
     this.password,
+    this.useLocalRelay = false, // 默认禁用
   });
 
   QbClientConfig copyWith({
@@ -57,6 +59,7 @@ class QbClientConfig {
     int? port,
     String? username,
     String? password,
+    bool? useLocalRelay,
   }) => QbClientConfig(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -64,6 +67,7 @@ class QbClientConfig {
         port: port ?? this.port,
         username: username ?? this.username,
         password: password ?? this.password,
+        useLocalRelay: useLocalRelay ?? this.useLocalRelay,
       );
 
   Map<String, dynamic> toJson() => {
@@ -72,6 +76,7 @@ class QbClientConfig {
         'host': host,
         'port': port,
         'username': username,
+        'useLocalRelay': useLocalRelay,
         // password intentionally excluded from plain json by default
       };
 
@@ -81,6 +86,7 @@ class QbClientConfig {
         host: json['host'] as String,
         port: (json['port'] as num).toInt(),
         username: json['username'] as String,
+        useLocalRelay: (json['useLocalRelay'] as bool?) ?? false,
       );
 }
 

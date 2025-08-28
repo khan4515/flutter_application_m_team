@@ -1,5 +1,5 @@
 name: flutter_application_m_team
-description: "A new Flutter project."
+description: "M-Team Flutter Application - A torrent management app."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -34,13 +34,13 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  english_words: ^4.0.0
   provider: ^6.0.0
   device_frame: ^1.4.0
   dio: ^5.4.0
   shared_preferences: ^2.2.3
-  flutter_secure_storage: ^9.2.2
-  intl: ^0.19.0
+  flutter_secure_storage: ^9.2.4
+  intl: ^0.20.2
+  http_parser: ^4.0.2
 
 dev_dependencies:
   flutter_test:
@@ -51,7 +51,8 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4  # 添加这一行
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -94,3 +95,28 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+dependency_overrides:
+  flutter_secure_storage_linux: ^2.0.1
+  flutter_secure_storage_macos: ^4.0.0
+  flutter_secure_storage_platform_interface: ^2.0.1
+  flutter_secure_storage_web: ^2.0.0
+  flutter_secure_storage_windows: ^4.0.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "mt.png"  # 使用项目根目录的 mt.png 作为图标源
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "mt.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "mt.png"
+    icon_size: 128 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "mt.png"

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 
 import '../../models/app_models.dart';
 
@@ -302,6 +303,41 @@ class QbService {
     String? savePath,
     bool? autoTMM,
   }) async {
+    if (config.useLocalRelay) {
+      // 使用本地中转：先下载种子文件，再提交给 qBittorrent
+      await _addTorrentByLocalRelay(
+        config: config,
+        password: password,
+        url: url,
+        category: category,
+        tags: tags,
+        savePath: savePath,
+        autoTMM: autoTMM,
+      );
+    } else {
+      // 直接通过 URL 添加
+      await _addTorrentByUrlDirect(
+        config: config,
+        password: password,
+        url: url,
+        category: category,
+        tags: tags,
+        savePath: savePath,
+        autoTMM: autoTMM,
+      );
+    }
+  }
+
+  // 直接通过 URL 添加任务（原有逻辑）
+  Future<void> _addTorrentByUrlDirect({
+    required QbClientConfig config,
+    required String password,
+    required String url,
+    String? category,
+    List<String>? tags,
+    String? savePath,
+    bool? autoTMM,
+  }) async {
     final base = _buildBase(config);
     final dio = _createDio(base);
 
@@ -326,6 +362,76 @@ class QbService {
 
     if ((res.statusCode ?? 0) != 200) {
       throw Exception('发送任务失败（HTTP ${res.statusCode}）');
+    }
+  }
+
+  // 本地中转：先下载种子文件，再提交给 qBittorrent
+  Future<void> _addTorrentByLocalRelay({
+    required QbClientConfig config,
+    required String password,
+    required String url,
+    String? category,
+    List<String>? tags,
+    String? savePath,
+    bool? autoTMM,
+  }) async {
+    final base = _buildBase(config);
+    final dio = _createDio(base);
+
+    // 1. 下载种子文件到本地
+    final torrentData = await _downloadTorrentFile(url);
+    
+    // 2. 通过文件内容提交给 qBittorrent
+    final form = FormData.fromMap({
+      'torrents': MultipartFile.fromBytes(
+        torrentData,
+        filename: 'torrent_${DateTime.now().millisecondsSinceEpoch}.torrent',
+        contentType: MediaType('application', 'x-bittorrent'),
+      ),
+      if (category != null && category.isNotEmpty) 'category': category,
+      if (tags != null && tags.isNotEmpty) 'tags': tags.join(','),
+      if (savePath != null && savePath.trim().isNotEmpty)
+        'savepath': savePath.trim(),
+      if (autoTMM != null) 'autoTMM': autoTMM ? 'true' : 'false',
+    });
+
+    final res = await _executeAuthenticatedRequest(
+      config,
+      password,
+      (cookie) => dio.post(
+        '/api/v2/torrents/add',
+        data: form,
+        options: Options(headers: cookie.isNotEmpty ? {'Cookie': cookie} : null),
+      ),
+    );
+
+    if ((res.statusCode ?? 0) != 200) {
+      throw Exception('发送任务失败（HTTP ${res.statusCode}）');
+    }
+  }
+
+  // 下载种子文件
+  Future<List<int>> _downloadTorrentFile(String url) async {
+    final dio = Dio();
+    
+    try {
+      final response = await dio.get<List<int>>(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          },
+        ),
+      );
+      
+      if (response.statusCode != 200 || response.data == null) {
+        throw Exception('下载种子文件失败（HTTP ${response.statusCode}）');
+      }
+      
+      return response.data!;
+    } catch (e) {
+      throw Exception('下载种子文件失败：$e');
     }
   }
 }

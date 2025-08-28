@@ -1265,6 +1265,7 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
   bool _testing = false;
   String? _testMsg;
   bool? _testOk;
+  bool _useLocalRelay = false; // 本地中转选项状态
 
   @override
   void initState() {
@@ -1275,6 +1276,7 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
       _hostCtrl.text = e.host;
       _portCtrl.text = e.port.toString();
       _userCtrl.text = e.username;
+      _useLocalRelay = e.useLocalRelay; // 初始化本地中转状态
     }
   }
 
@@ -1308,6 +1310,7 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
       host: host,
       port: port,
       username: user,
+      useLocalRelay: _useLocalRelay, // 包含本地中转选项
     );
     // 可选先测连
     Navigator.of(context).pop(_QbEditorResult(cfg, pwd.isEmpty ? null : pwd));
@@ -1343,6 +1346,7 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
         host: host,
         port: port,
         username: user,
+        useLocalRelay: _useLocalRelay, // 包含本地中转选项
       );
 
       await QbService.instance.testConnection(config: cfg, password: pwd);
@@ -1438,6 +1442,45 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
                         border: OutlineInputBorder(),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    // 本地中转选项
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '本地中转',
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '启用后先下载种子文件到本地，再提交给 qBittorrent',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: _useLocalRelay,
+                            onChanged: (value) {
+                              setState(() {
+                                _useLocalRelay = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                     if (_testMsg != null) ...[
                       const SizedBox(height: 16),
                       Container(
@@ -1485,7 +1528,7 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
             ),
             // 按钮栏
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(12),
               decoration: const BoxDecoration(
                 border: Border(top: BorderSide(color: Colors.grey, width: 0.5)),
               ),

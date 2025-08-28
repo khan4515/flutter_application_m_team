@@ -212,9 +212,15 @@ class _TorrentDetailPageState extends State<TorrentDetailPage> {
             }
             
             if (snapshot.hasData && snapshot.data!.data != null) {
-              return Image.memory(
-                Uint8List.fromList(snapshot.data!.data!),
-                fit: BoxFit.contain,
+              final imageData = Uint8List.fromList(snapshot.data!.data!);
+              return GestureDetector(
+                onTap: () {
+                  _showFullScreenImage(context, imageData);
+                },
+                child: Image.memory(
+                  imageData,
+                  fit: BoxFit.contain,
+                ),
               );
             }
             
@@ -231,6 +237,54 @@ class _TorrentDetailPageState extends State<TorrentDetailPage> {
           },
         ),
       ),
+    );
+  }
+
+  void _showFullScreenImage(BuildContext context, Uint8List imageData) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (BuildContext context) {
+        return Dialog.fullscreen(
+          backgroundColor: Colors.black,
+          child: Stack(
+            children: [
+              Center(
+                child: InteractiveViewer(
+                  panEnabled: true,
+                  scaleEnabled: true,
+                  boundaryMargin: EdgeInsets.zero,
+                  constrained: false,
+                  minScale: 0.1,
+                  maxScale: 4.0,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Image.memory(
+                        imageData,
+                        fit: BoxFit.contain,
+                        width: constraints.maxWidth,
+                        height: constraints.maxHeight,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 40,
+                right: 20,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
