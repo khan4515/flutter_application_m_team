@@ -15,10 +15,10 @@ if (keystorePropertiesFile.exists()) {
 }
 
 // Use environment variables for GitHub Actions
-val keyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties["keyAlias"] as String?
-val keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties["keyPassword"] as String?
-val storePassword = System.getenv("STORE_PASSWORD") ?: keystoreProperties["storePassword"] as String?
-val storeFile = System.getenv("STORE_FILE") ?: keystoreProperties["storeFile"] as String?
+val keyAliasString = System.getenv("KEY_ALIAS") ?: keystoreProperties["keyAlias"] as String?
+val keyPasswordString = System.getenv("KEY_PASSWORD") ?: keystoreProperties["keyPassword"] as String?
+val storePasswordString = System.getenv("STORE_PASSWORD") ?: keystoreProperties["storePassword"] as String?
+val storeFilePath = System.getenv("STORE_FILE") ?: keystoreProperties["storeFile"] as String?
 
 android {
     namespace = "com.just_look_at_now.m_team"
@@ -47,10 +47,13 @@ android {
 
     signingConfigs {
         create("release") {
-            this.keyAlias = keyAlias
-            this.keyPassword = keyPassword
-            this.storeFile = if (storeFile != null) file(storeFile) else null
-            this.storePassword = storePassword
+            println(">>> storeFile inside signingConfig = $storeFilePath")
+            this.keyAlias = keyAliasString
+            this.keyPassword = keyPasswordString
+            if (storeFilePath != null) {
+                this.storeFile = file(storeFilePath)
+            }
+            this.storePassword = storePasswordString
         }
     }
 
