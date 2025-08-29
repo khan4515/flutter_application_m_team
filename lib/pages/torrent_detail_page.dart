@@ -254,18 +254,13 @@ class _TorrentDetailPageState extends State<TorrentDetailPage> {
                   panEnabled: true,
                   scaleEnabled: true,
                   boundaryMargin: EdgeInsets.zero,
-                  constrained: false,
+                  constrained: true,
+                  clipBehavior: Clip.none,
                   minScale: 0.1,
                   maxScale: 4.0,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Image.memory(
-                        imageData,
-                        fit: BoxFit.contain,
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                      );
-                    },
+                  child: Image.memory(
+                    imageData,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
