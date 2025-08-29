@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
+import 'package:provider/provider.dart';
 import '../services/api/api_client.dart';
 import '../services/image_http_client.dart';
+import '../services/storage/storage_service.dart';
 
 class TorrentDetailPage extends StatefulWidget {
   final String torrentId;
@@ -28,6 +30,15 @@ class _TorrentDetailPageState extends State<TorrentDetailPage> {
   void initState() {
     super.initState();
     _loadDetail();
+    _loadAutoLoadImagesSetting();
+  }
+
+  Future<void> _loadAutoLoadImagesSetting() async {
+    final storage = Provider.of<StorageService>(context, listen: false);
+    final autoLoad = await storage.loadAutoLoadImages();
+    setState(() {
+      _showImages = autoLoad;
+    });
   }
 
   Future<void> _loadDetail() async {
@@ -128,14 +139,23 @@ class _TorrentDetailPageState extends State<TorrentDetailPage> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.image, color: Colors.grey),
+                    Icon(Icons.image, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     const SizedBox(width: 8),
-                    const Text('图片已隐藏'),
+                    Text(
+                      '图片已隐藏',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     const Spacer(),
                     TextButton(
                       onPressed: () {
@@ -213,13 +233,29 @@ class _TorrentDetailPageState extends State<TorrentDetailPage> {
             
             if (snapshot.hasData && snapshot.data!.data != null) {
               final imageData = Uint8List.fromList(snapshot.data!.data!);
+              final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+              
               return GestureDetector(
                 onTap: () {
                   _showFullScreenImage(context, imageData);
                 },
-                child: Image.memory(
-                  imageData,
-                  fit: BoxFit.contain,
+                child: Stack(
+                  children: [
+                    Image.memory(
+                      imageData,
+                      fit: BoxFit.contain,
+                    ),
+                    // 夜间模式下添加覆盖层
+                    if (isDarkMode)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               );
             }

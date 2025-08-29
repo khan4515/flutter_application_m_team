@@ -18,6 +18,14 @@ class StorageKeys {
   static const String siteApiKey = 'site.apiKey';
   // 非安全存储的降级 Key（例如 Linux 桌面端 keyring 被锁定时）
   static const String siteApiKeyFallback = 'site.apiKey.fallback';
+
+  // 主题相关
+  static const String themeMode = 'theme.mode'; // system | light | dark
+  static const String themeUseDynamic = 'theme.useDynamic'; // bool
+  static const String themeSeedColor = 'theme.seedColor'; // int (ARGB)
+  
+  // 图片设置
+  static const String autoLoadImages = 'images.autoLoad'; // bool
 }
 
 class StorageService {
@@ -156,5 +164,47 @@ class StorageService {
   Future<String?> loadDefaultQbId() async {
     final prefs = await _prefs;
     return prefs.getString(StorageKeys.qbDefaultId);
+  }
+
+  // 主题相关：保存与读取
+  Future<void> saveThemeMode(String mode) async {
+    final prefs = await _prefs;
+    await prefs.setString(StorageKeys.themeMode, mode);
+  }
+
+  Future<String?> loadThemeMode() async {
+    final prefs = await _prefs;
+    return prefs.getString(StorageKeys.themeMode);
+  }
+
+  Future<void> saveUseDynamicColor(bool useDynamic) async {
+    final prefs = await _prefs;
+    await prefs.setBool(StorageKeys.themeUseDynamic, useDynamic);
+  }
+
+  Future<bool?> loadUseDynamicColor() async {
+    final prefs = await _prefs;
+    return prefs.getBool(StorageKeys.themeUseDynamic);
+  }
+
+  Future<void> saveSeedColor(int argb) async {
+    final prefs = await _prefs;
+    await prefs.setInt(StorageKeys.themeSeedColor, argb);
+  }
+
+  Future<int?> loadSeedColor() async {
+    final prefs = await _prefs;
+    return prefs.getInt(StorageKeys.themeSeedColor);
+  }
+
+  // 图片设置相关：保存与读取
+  Future<void> saveAutoLoadImages(bool autoLoad) async {
+    final prefs = await _prefs;
+    await prefs.setBool(StorageKeys.autoLoadImages, autoLoad);
+  }
+
+  Future<bool> loadAutoLoadImages() async {
+    final prefs = await _prefs;
+    return prefs.getBool(StorageKeys.autoLoadImages) ?? true; // 默认自动加载
   }
 }

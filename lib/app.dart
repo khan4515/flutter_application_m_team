@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 
 import 'models/app_models.dart';
 import 'pages/torrent_detail_page.dart';
 import 'services/api/api_client.dart';
 import 'services/storage/storage_service.dart';
+import 'services/theme/theme_manager.dart';
 import 'utils/format.dart';
 import 'services/qbittorrent/qb_client.dart';
 
@@ -32,16 +35,29 @@ class MTeamApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AppState()..loadInitial(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'M-Team',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.deepPurple,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AppState()..loadInitial(),
         ),
-        home: const LaunchDecider(),
+        ChangeNotifierProvider(
+          create: (_) => ThemeManager(StorageService.instance)..initializeDynamicColor(),
+        ),
+        Provider<StorageService>(
+          create: (_) => StorageService.instance,
+        ),
+      ],
+      child: Consumer<ThemeManager>(
+        builder: (context, themeManager, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'M-Team',
+            theme: themeManager.lightTheme,
+            darkTheme: themeManager.darkTheme,
+            themeMode: themeManager.flutterThemeMode,
+            home: const LaunchDecider(),
+          );
+        },
       ),
     );
   }
@@ -1242,6 +1258,60 @@ class _PasswordPromptDialogState extends State<_PasswordPromptDialog> {
   }
 }
 
+class _AutoLoadImagesTile extends StatefulWidget {
+  @override
+  _AutoLoadImagesTileState createState() => _AutoLoadImagesTileState();
+}
+
+class _AutoLoadImagesTileState extends State<_AutoLoadImagesTile> {
+  bool _autoLoad = true;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSetting();
+  }
+
+  Future<void> _loadSetting() async {
+    final storage = Provider.of<StorageService>(context, listen: false);
+    final autoLoad = await storage.loadAutoLoadImages();
+    setState(() {
+      _autoLoad = autoLoad;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _saveSetting(bool value) async {
+    final storage = Provider.of<StorageService>(context, listen: false);
+    await storage.saveAutoLoadImages(value);
+    setState(() {
+      _autoLoad = value;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const SwitchListTile(
+        secondary: Icon(Icons.image),
+        title: Text('自动加载图片'),
+        subtitle: Text('关闭后需手动点击才能查看图片'),
+        value: true,
+        onChanged: null,
+      );
+    }
+
+    return SwitchListTile(
+      secondary: const Icon(Icons.image),
+      title: const Text('自动加载图片'),
+      subtitle: const Text('关闭后需手动点击才能查看图片'),
+      value: _autoLoad,
+      onChanged: _saveSetting,
+    );
+  }
+}
+
 class _QbEditorResult {
   final QbClientConfig config;
   final String? password;
@@ -1587,7 +1657,327 @@ class SettingsPage extends StatelessWidget {
         title: const Text('设置'),
         actions: const [_QbSpeedIndicator()],
       ),
-      body: const Center(child: Text('设置页（后续实现主题、暗色等）')),
+      body: const _SettingsBody(),
+    );
+  }
+}
+
+class _SettingsBody extends StatelessWidget {
+  const _SettingsBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ThemeManager>(
+      builder: (context, themeManager, child) {
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // 主题设置卡片
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '主题设置',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // 主题模式选择
+                    const Text(
+                      '主题模式',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<AppThemeMode>(
+                      segments: const [
+                        ButtonSegment(
+                          value: AppThemeMode.system,
+                          label: Text('跟随系统'),
+                          icon: Icon(Icons.brightness_auto),
+                        ),
+                        ButtonSegment(
+                          value: AppThemeMode.light,
+                          label: Text('浅色'),
+                          icon: Icon(Icons.light_mode),
+                        ),
+                        ButtonSegment(
+                          value: AppThemeMode.dark,
+                          label: Text('深色'),
+                          icon: Icon(Icons.dark_mode),
+                        ),
+                      ],
+                      selected: {themeManager.themeMode},
+                      onSelectionChanged: (Set<AppThemeMode> selection) {
+                        themeManager.setThemeMode(selection.first);
+                      },
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // 动态取色开关
+                    SwitchListTile(
+                      title: const Text('动态取色'),
+                      subtitle: const Text('使用系统壁纸颜色作为主题色'),
+                      value: themeManager.useDynamicColor,
+                      onChanged: (value) {
+                        themeManager.setUseDynamicColor(value);
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // 自定义颜色选择（仅在不使用动态取色时显示）
+                    if (!themeManager.useDynamicColor) ...[
+                      const Text(
+                        '主题色',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 8),
+                      _ColorPickerTile(
+                        color: themeManager.seedColor,
+                        onColorChanged: (color) {
+                          themeManager.setSeedColor(color);
+                        },
+                      ),
+                    ]
+                  ],
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 其他设置卡片（预留）
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '网络设置',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // 自动加载图片开关
+                    _AutoLoadImagesTile(),
+                    
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ColorPickerTile extends StatelessWidget {
+  final Color color;
+  final ValueChanged<Color> onColorChanged;
+  
+  const _ColorPickerTile({
+    required this.color,
+    required this.onColorChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _showColorPicker(context),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).dividerColor),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '选择主题色',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.palette_outlined),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  void _showColorPicker(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => _ColorPickerDialog(
+        initialColor: color,
+        onColorChanged: onColorChanged,
+      ),
+    );
+  }
+}
+
+class _ColorPickerDialog extends StatefulWidget {
+  final Color initialColor;
+  final ValueChanged<Color> onColorChanged;
+  
+  const _ColorPickerDialog({
+    required this.initialColor,
+    required this.onColorChanged,
+  });
+
+  @override
+  State<_ColorPickerDialog> createState() => _ColorPickerDialogState();
+}
+
+class _ColorPickerDialogState extends State<_ColorPickerDialog> {
+  late Color _selectedColor;
+  
+  @override
+  void initState() {
+    super.initState();
+    _selectedColor = widget.initialColor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('选择主题色'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 预设颜色
+            const Text(
+              '预设颜色',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Colors.red,
+                Colors.pink,
+                Colors.purple,
+                Colors.deepPurple,
+                Colors.indigo,
+                Colors.blue,
+                Colors.lightBlue,
+                Colors.cyan,
+                Colors.teal,
+                Colors.green,
+                Colors.lightGreen,
+                Colors.lime,
+                Colors.yellow,
+                Colors.amber,
+                Colors.orange,
+                Colors.deepOrange,
+                Colors.brown,
+                Colors.grey,
+                Colors.blueGrey,
+              ].map((color) => _ColorCircle(
+                color: color,
+                isSelected: _selectedColor.toARGB32() == color.toARGB32(),
+                onTap: () => setState(() => _selectedColor = color),
+              )).toList(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        FilledButton(
+          onPressed: () {
+            widget.onColorChanged(_selectedColor);
+            Navigator.of(context).pop();
+          },
+          child: const Text('确定'),
+        ),
+      ],
+    );
+  }
+}
+
+class _ColorCircle extends StatelessWidget {
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+  
+  const _ColorCircle({
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: isSelected
+              ? Border.all(color: Colors.white, width: 3)
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
+        child: isSelected
+            ? const Icon(
+                Icons.check,
+                color: Colors.white,
+                size: 20,
+              )
+            : null,
+      ),
     );
   }
 }
@@ -1602,7 +1992,60 @@ class AboutPage extends StatelessWidget {
         title: const Text('关于'),
         actions: const [_QbSpeedIndicator()],
       ),
-      body: const Center(child: Text('M-Team Flutter 客户端（非官方）')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('M-Team Flutter 客户端（非官方）'),
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: () async {
+                try {
+                  final Uri url = Uri.parse('https://github.com/JustLookAtNow/flutter_application_m_team');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  } else {
+                    // 降级处理：复制URL到剪贴板
+                    await Clipboard.setData(ClipboardData(text: url.toString()));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('无法直接打开链接，已复制到剪贴板，请手动粘贴到浏览器'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  // 捕获任何异常并显示错误信息
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('操作失败: $e'),
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'https://github.com/JustLookAtNow',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      // decoration: TextDecoration.underline,
+                    ),
+                    overflow: TextOverflow.visible,
+                    softWrap: true,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
