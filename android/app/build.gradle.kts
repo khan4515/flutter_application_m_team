@@ -14,6 +14,12 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// Use environment variables for GitHub Actions
+val keyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties["keyAlias"] as String?
+val keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties["keyPassword"] as String?
+val storePassword = System.getenv("STORE_PASSWORD") ?: keystoreProperties["storePassword"] as String?
+val storeFile = System.getenv("STORE_FILE") ?: keystoreProperties["storeFile"] as String?
+
 android {
     namespace = "com.just_look_at_now.m_team"
     compileSdk = flutter.compileSdkVersion
@@ -41,10 +47,10 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = if (keystoreProperties["storeFile"] != null) file(keystoreProperties["storeFile"] as String) else null
-            storePassword = keystoreProperties["storePassword"] as String?
+            this.keyAlias = keyAlias
+            this.keyPassword = keyPassword
+            this.storeFile = if (storeFile != null) file(storeFile) else null
+            this.storePassword = storePassword
         }
     }
 

@@ -1,103 +1,107 @@
-# M-Team Flutter 客户端（需求与设计说明）
+# M-Team Flutter 客户端
 
-本仓库将实现一个基于 Flutter（Material Design、Material 3）的 M-Team 非官方移动客户端。当前 lib/main.dart 中为示例代码，不影响后续开发，会在实现阶段逐步替换。
+基于 Flutter（Material Design 3）开发的 M-Team 非官方移动客户端，支持种子浏览、搜索和下载管理。
 
-一、目标与范围
-- 支持以「站点根域 + Passkey」为凭据的接入方式。
-- 提供四个主要页面：登录、主页面、下载器设置、应用设置；四页均可通过左侧抽屉导航进入。
-- 应用启动时自动检测会话：若本地有可用站点信息且测试通过则进入主页面，否则进入登录页。
+## 功能特性
 
-二、页面与交互设计
-1) 登录页
-- 站点选择：从预设站点列表中选择，或手动输入根域（含协议，例：https://example.com）。
-- Passkey：输入框，支持粘贴；本地安全存储。
-- 按钮：
-  - 测试：调用“站点测试/鉴权”接口验证根域与 Passkey 是否有效，失败给出原因（网络故障、证书异常、无效 passkey、服务端错误等）。
-  - 确定：保存站点信息（根域、passkey、选择的名称）后跳转主页面。
+### 核心功能
+- **种子浏览**：支持按分类（综合/电影/电视/9kg）浏览最新种子资源
+- **搜索功能**：关键词搜索，支持分类筛选
+- **种子详情**：查看种子详细信息、截图预览、文件列表
+- **下载管理**：集成 qBittorrent，支持一键下载到远程下载器
+- **本地中转**：支持本地中转模式，先下载种子文件再提交给下载器
 
-2) 主页面
-- 页头（用户卡片）：展示从 M-Team 获取的用户信息，包含：用户名/UID、魔力值、上传量、下载量、做种/活动中数量等。
-- 分类切换：综合（默认）/电影/电视/9kg；用于筛选资源列表和搜索。
-- 最新资源列表：展示最近更新的前 30 条；每条包含：名称（可换行）、标题、副标题/标签（若有）、大小、类型、下载数、上传数；提供下载按钮。
-- 搜索：输入关键字并结合当前分类发起搜索，更新列表。
-- 下载：点击下载调用默认 qBittorrent 下载器新增任务（支持携带分类/标签，若下载器设置中已获取）。
+### 下载器集成
+- **多下载器管理**：支持添加、编辑、删除多个 qBittorrent 实例
+- **连接测试**：自动验证下载器连接状态
+- **分类标签**：自动获取下载器的分类和标签配置
+- **实时状态**：显示下载器的上传/下载速度和剩余空间
 
-3) 下载器设置（qBittorrent）
-- 多下载器管理：新增/编辑/删除，字段：名称、IP:端口、用户名、密码（安全存储）。
-- 测试连接：验证 /api/v2 接口可用性与登录；成功后自动获取分类与标签缓存到本地。
-- 设为默认：可指定一个默认下载器；当默认下载器存在时，全局右上角展示：上/下行速度、剩余空间（轮询刷新，默认 5-10s，可后续设置）。
+### 用户体验
+- **Material Design 3**：现代化的界面设计
+- **响应式布局**：适配不同屏幕尺寸
+- **图片查看器**：支持缩放、平移的全屏图片浏览
+- **安全存储**：敏感信息（Passkey、密码）安全加密存储
 
-4) 设置页
-- 主题色：主色选择器。
-- 动态取色：Android 12+ 支持 Material You 动态色，优先启用。
-- 深色模式：跟随系统/强制浅色/强制深色。
+## 项目结构
 
-5) 导航
-- 左侧抽屉包含：主页面、下载器设置、应用设置、关于。
-- 支持返回键行为与状态恢复（后续迭代）。
+```
+lib/
+├── app.dart                    # 应用入口、路由配置
+├── main.dart                   # 主函数
+├── models/
+│   └── app_models.dart         # 数据模型定义
+├── pages/
+│   └── torrent_detail_page.dart # 种子详情页面
+├── services/
+│   ├── api/
+│   │   └── api_client.dart     # M-Team API 客户端
+│   ├── qbittorrent/
+│   │   └── qb_client.dart      # qBittorrent API 封装
+│   ├── storage/
+│   │   └── storage_service.dart # 本地存储服务
+│   └── image_http_client.dart  # 图片加载客户端
+└── utils/
+    └── format.dart             # 格式化工具函数
+```
 
-三、数据与接口约定（占位，等你提供具体接口后对齐）
-- 站点根域与 passkey 统一在客户端拦截器中拼接到请求（如 query 或 header），确保所有 API 使用同一套鉴权方式。
-- 用户信息接口：返回用户基础信息、魔力值、体积与活跃状态等。
-- 资源列表接口：支持按分类与关键字查询、分页；客户端首页取最近 30 条。
-- 资源字段：id、标题/副标题、类型、大小、做种/下载统计、下载链接（或种子/磁力信息）。
-- 错误约定：标准化错误码与 message，客户端统一映射提示。
+## 技术栈
 
-四、本地存储
-- 安全信息（passkey、下载器用户名/密码、Cookie 等）：flutter_secure_storage。
-- 一般配置（站点根域、站点名称、默认下载器、主题设置、分类偏好等）：shared_preferences。
-- 结构示例：
-  - app.site.baseUrl: string
-  - app.site.name: string
-  - app.site.passkey: secure
-  - qb.clients: JSON 数组（名称、host、port、username、secure(password)）
-  - qb.defaultClientId: string
-  - ui.theme.seedColor: string | null
-  - ui.theme.dynamicColor: bool
-  - ui.theme.brightness: system | light | dark
+- **Flutter**: 跨平台移动应用框架
+- **Provider**: 状态管理
+- **Dio**: HTTP 客户端
+- **SharedPreferences**: 本地配置存储
+- **FlutterSecureStorage**: 敏感信息安全存储
+- **DeviceFrame**: 设备预览框架
 
-五、目录结构规划（后续实现时生成）
-- lib/
-  - app.dart（App 根、路由与主题）
-  - features/
-    - auth/（登录页、站点选择组件）
-    - home/（主页面、用户卡片、资源列表、搜索）
-    - downloader/（qBittorrent 设置、连接测试、状态展示）
-    - settings/（外观设置等）
-  - services/
-    - api/（M-Team API 客户端、拦截器）
-    - qbittorrent/（qB API 封装）
-    - storage/（本地存储封装）
-  - models/（用户、资源、下载器配置等模型）
-  - widgets/（通用组件）
-  - theme/（主题与配色）
+## 快速开始
 
-六、依赖规划（实现阶段加入）
-- provider（全局状态管理，项目已使用）
-- dio（HTTP 客户端与拦截器）
-- shared_preferences（一般配置本地存储）
-- flutter_secure_storage（敏感信息安全存储）
-- intl（格式化体积与日期，可选）
+### 环境要求
+- Flutter SDK 3.0+
+- Dart SDK 3.0+
+- Android Studio / VS Code
 
-七、运行与调试
-- 环境：Flutter（stable），Dart SDK 3.9+。
-- 安装依赖：flutter pub get
-- 运行：flutter run（选择目标设备）
-- Web 端仅用于快速预览 UI，不保证与原站点接口完全兼容。
+### 安装依赖
+```bash
+flutter pub get
+```
 
-八、开发计划（里程碑）
-1) 基础架构与目录搭建、依赖接入
-2) 本地存储与 API 客户端骨架
-3) 启动会话检查与登录页
-4) 主页面（用户信息 + 列表 + 搜索 + 分类）
-5) qBittorrent 集成（多下载器、测试、分类/标签、默认与状态栏）
-6) 设置页（主题/动态色/暗色）
-7) 异常与空态处理、打包与发布配置
+### 运行应用
+```bash
+# 调试模式
+flutter run
 
-九、约定与安全
-- 不记录 Passkey 与密码等敏感信息到日志。
-- 网络错误与超时统一提示；关键操作（下载、删除）需二次确认。
-- 后续若需国际化，采用 Flutter i18n 方案（待定）。
+# 发布模式
+flutter run --release
+```
 
-备注
-- 等你提供 M-Team 具体接口后，我将对接真实字段与鉴权方式，并开始逐步实现上述功能。
+### 构建 APK
+```bash
+# 调试版本
+flutter build apk --debug
+
+# 发布版本
+flutter build apk --release
+```
+
+## 配置说明
+
+### M-Team 站点配置
+- 支持自定义站点域名
+- 使用 Passkey 进行身份验证
+- 自动保存登录状态
+
+### qBittorrent 配置
+- 支持多个下载器实例
+- 自动获取分类和标签
+- 支持本地中转下载模式
+
+## 安全性
+
+- 所有敏感信息（Passkey、密码）使用 FlutterSecureStorage 加密存储
+- 不在日志中记录敏感信息
+- 支持 HTTPS 证书验证
+
+## 许可证
+
+MIT License - 详见 [LICENSE](LICENSE) 文件
