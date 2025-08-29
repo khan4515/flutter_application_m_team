@@ -64,31 +64,16 @@ jobs:
         echo "storeFile=keystore.jks" >> android/key.properties
       
     - name: Build APK - All-in-one (arm64-v8a + armeabi-v7a)
-      # env:
-      #   KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      #   KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      #   STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-      #   STORE_FILE: android/app/keystore.jks
       run: |
         flutter build apk --release --target-platform android-arm64,android-arm
         mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/app-allinone-release.apk
         
     - name: Build APK - ARM64 (v8a)
-      # env:
-      #   KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      #   KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      #   STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-      #   STORE_FILE: android/app/keystore.jks
       run: |
         flutter build apk --release --target-platform android-arm64
         mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
         
     - name: Build APK - ARMv7
-      # env:
-      #   KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      #   KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      #   STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-      #   STORE_FILE: android/app/keystore.jks
       run: |
         flutter build apk --release --target-platform android-arm
         mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
