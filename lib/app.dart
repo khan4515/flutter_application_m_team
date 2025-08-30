@@ -827,12 +827,8 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             const SizedBox(width: 6),
-                            Icon(Icons.arrow_upward,color: Colors.green,),
-                            Text(' ${t.seeders}'),
-                            const SizedBox(width: 6),
-                            Icon(Icons.arrow_downward,color: Colors.red,),
-                            Text(' ${t.leechers}'),
-                            const SizedBox(width: 6),
+                            _buildSeedLeechInfo(t.seeders, t.leechers),
+                            const SizedBox(width: 10),
                             Text(Formatters.dataFromBytes(t.sizeBytes)),
                             const Spacer(), // 推到最右边
                             _buildDownloadStatusIcon(t.downloadStatus),
@@ -852,6 +848,19 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSeedLeechInfo(int seeders, int leechers) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.arrow_upward, color: Colors.green, size: 16),
+        Text('$seeders', style: const TextStyle(fontSize: 12)),
+        const SizedBox(width: 4),
+        Icon(Icons.arrow_downward, color: Colors.red, size: 16),
+        Text('$leechers', style: const TextStyle(fontSize: 12)),
+      ],
     );
   }
 
