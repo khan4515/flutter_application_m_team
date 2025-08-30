@@ -2189,9 +2189,19 @@ class _QbSpeedIndicatorState extends State<_QbSpeedIndicator> {
 
   void _openDownloader() {
     if (!mounted) return;
+    
+    // 检查当前是否已经在下载器设置页面
+    final currentRoute = ModalRoute.of(context);
+    if (currentRoute != null && currentRoute.settings.name == '/downloader_settings') {
+      return; // 已经在下载器设置页面，不需要重复打开
+    }
+    
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const DownloaderSettingsPage()));
+    ).push(MaterialPageRoute(
+      builder: (_) => const DownloaderSettingsPage(),
+      settings: const RouteSettings(name: '/downloader_settings'),
+    ));
   }
 
   @override
