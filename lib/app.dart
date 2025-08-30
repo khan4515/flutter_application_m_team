@@ -1155,7 +1155,7 @@ class _DownloaderSettingsPageState extends State<DownloaderSettingsPage> {
             ),
           ],
         ),
-        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         behavior: SnackBarBehavior.floating,
       ));
     } catch (e) {
