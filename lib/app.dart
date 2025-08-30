@@ -1099,18 +1099,82 @@ class _DownloaderSettingsPageState extends State<DownloaderSettingsPage> {
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('正在测试连接…')));
+    ).showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '正在测试连接…',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      behavior: SnackBarBehavior.floating,
+    ));
     try {
       await QbService.instance.testConnection(config: c, password: password!);
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('连接成功')));
+      ).showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              Icons.check_circle,
+              color: Colors.green[700],
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '连接成功',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+        behavior: SnackBarBehavior.floating,
+      ));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('连接失败：$e')));
+      ).showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              Icons.error,
+              color: Theme.of(context).colorScheme.onErrorContainer,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '连接失败：$e',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        behavior: SnackBarBehavior.floating,
+      ));
     }
   }
 
@@ -1561,13 +1625,13 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
                         ),
                         decoration: BoxDecoration(
                           color: _testOk == true
-                              ? const Color(0xFFE6F4EA)
-                              : const Color(0xFFFFEBEE),
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context).colorScheme.errorContainer,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: _testOk == true
-                                ? const Color(0xFF34A853)
-                                : const Color(0xFFEA4335),
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.error,
                           ),
                         ),
                         child: Row(
@@ -1578,14 +1642,19 @@ class _QbClientEditorDialogState extends State<_QbClientEditorDialog> {
                                   : Icons.error_outline,
                               size: 18,
                               color: _testOk == true
-                                  ? const Color(0xFF34A853)
-                                  : const Color(0xFFEA4335),
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.error,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 _testMsg!,
-                                style: const TextStyle(fontSize: 13),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: _testOk == true
+                                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                                      : Theme.of(context).colorScheme.onErrorContainer,
+                                ),
                               ),
                             ),
                           ],

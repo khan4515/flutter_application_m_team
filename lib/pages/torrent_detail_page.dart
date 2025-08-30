@@ -325,10 +325,10 @@ class _TorrentDetailPageState extends State<TorrentDetailPage> {
       appBar: AppBar(
         title: SelectableText(
           widget.torrentName,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
+          style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
