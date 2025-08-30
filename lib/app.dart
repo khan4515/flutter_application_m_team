@@ -708,60 +708,88 @@ class _HomePageState extends State<HomePage> {
                   onSelected: _onSortSelected,
                   icon: Icon(
                     _sortBy == 'none' ? Icons.sort : Icons.sort,
-                    color: _sortBy == 'none' ? null : Theme.of(context).primaryColor,
+                    color: _sortBy == 'none' ? null : Theme.of(context).colorScheme.secondary,
                   ),
                   tooltip: '排序',
                   itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 'none',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.clear,
-                            color: _sortBy == 'none' ? Theme.of(context).primaryColor : null,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text('默认排序'),
-                        ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _sortBy == 'none' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.clear,
+                              color: _sortBy == 'none' ? Theme.of(context).colorScheme.secondary : null,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('默认排序'),
+                          ],
+                        ),
                       ),
                     ),
                     PopupMenuItem(
                       value: 'size',
-                      child: Row(
-                        children: [
-                          Icon(
-                            _sortBy == 'size' && _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                            color: _sortBy == 'size' ? Theme.of(context).primaryColor : null,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text('按大小排序'),
-                        ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _sortBy == 'size' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _sortBy == 'size' && _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: _sortBy == 'size' ? Theme.of(context).colorScheme.secondary : null,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('按大小排序'),
+                          ],
+                        ),
                       ),
                     ),
                     PopupMenuItem(
                       value: 'upload',
-                      child: Row(
-                        children: [
-                          Icon(
-                            _sortBy == 'upload' && _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                            color: _sortBy == 'upload' ? Theme.of(context).primaryColor : null,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text('按上传量排序'),
-                        ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _sortBy == 'upload' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _sortBy == 'upload' && _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: _sortBy == 'upload' ? Theme.of(context).colorScheme.secondary : null,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('按上传量排序'),
+                          ],
+                        ),
                       ),
                     ),
                     PopupMenuItem(
                       value: 'download',
-                      child: Row(
-                        children: [
-                          Icon(
-                            _sortBy == 'download' && _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                            color: _sortBy == 'download' ? Theme.of(context).primaryColor : null,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text('按下载量排序'),
-                        ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _sortBy == 'download' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _sortBy == 'download' && _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: _sortBy == 'download' ? Theme.of(context).colorScheme.secondary : null,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('按下载量排序'),
+                          ],
+                        ),
                       ),
                     ),
                   ],
