@@ -16,6 +16,13 @@ class QbTransferInfo {
   });
 }
 
+class QbServerState {
+  final int freeSpaceOnDisk;
+  const QbServerState({
+    required this.freeSpaceOnDisk,
+  });
+}
+
 class QbService {
   QbService._();
   static final QbService instance = QbService._();
@@ -221,6 +228,37 @@ class QbService {
       dlSpeed: dlSpeed,
       upTotal: upTotal,
       dlTotal: dlTotal,
+    );
+  }
+
+  Future<QbServerState> fetchServerState({
+    required QbClientConfig config,
+    required String password,
+  }) async {
+    final base = _buildBase(config);
+    final dio = _createDio(base);
+    
+    final res = await _executeAuthenticatedRequest<Map<String, dynamic>>(
+      config,
+      password,
+      (cookie) => dio.get(
+        '/api/v2/sync/maindata',
+        options: Options(headers: cookie.isNotEmpty ? {'Cookie': cookie} : null),
+      ),
+    );
+    
+    if ((res.statusCode ?? 0) != 200) {
+      throw Exception('获取服务器状态失败（HTTP ${res.statusCode}）');
+    }
+    final data = res.data is Map
+        ? (res.data as Map).cast<String, dynamic>()
+        : <String, dynamic>{};
+    final serverState = data['server_state'] as Map<String, dynamic>? ?? {};
+    final freeSpaceOnDisk = (serverState['free_space_on_disk'] ?? 0) is int
+        ? serverState['free_space_on_disk'] as int
+        : int.tryParse('${serverState['free_space_on_disk'] ?? 0}') ?? 0;
+    return QbServerState(
+      freeSpaceOnDisk: freeSpaceOnDisk,
     );
   }
 
