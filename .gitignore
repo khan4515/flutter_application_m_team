@@ -47,3 +47,5 @@ app.*.map.json
 
 # 上传 APK 脚本
 upload_apks.sh
+
+mise.toml

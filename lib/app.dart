@@ -716,7 +716,7 @@ class _HomePageState extends State<HomePage> {
                       value: 'none',
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _sortBy == 'none' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          color: _sortBy == 'none' ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : null,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -736,7 +736,7 @@ class _HomePageState extends State<HomePage> {
                       value: 'size',
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _sortBy == 'size' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          color: _sortBy == 'size' ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : null,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -756,7 +756,7 @@ class _HomePageState extends State<HomePage> {
                       value: 'upload',
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _sortBy == 'upload' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          color: _sortBy == 'upload' ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : null,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -776,7 +776,7 @@ class _HomePageState extends State<HomePage> {
                       value: 'download',
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _sortBy == 'download' ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
+                          color: _sortBy == 'download' ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : null,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
