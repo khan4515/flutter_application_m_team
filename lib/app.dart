@@ -393,6 +393,9 @@ class _HomePageState extends State<HomePage> {
   // 排序相关状态
   String _sortBy = 'none'; // none, size, upload, download
   bool _sortAscending = false;
+  
+  // 收藏筛选状态
+  bool _onlyFavorites = false;
 
   @override
   void initState() {
@@ -466,6 +469,7 @@ class _HomePageState extends State<HomePage> {
             : _keywordCtrl.text.trim(),
         pageNumber: _pageNumber,
         pageSize: _pageSize,
+        onlyFav: _onlyFavorites ? 1 : null,
       );
       setState(() {
         _items.addAll(res.items);
@@ -611,6 +615,60 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _onToggleCollection(TorrentItem item) async {
+    try {
+      final newCollectionState = !item.collection;
+      await ApiClient.instance.toggleCollection(
+        id: item.id,
+        make: newCollectionState,
+      );
+      
+      // 更新本地状态
+      final index = _items.indexWhere((t) => t.id == item.id);
+      if (index != -1) {
+        setState(() {
+          _items[index] = TorrentItem(
+            id: item.id,
+            name: item.name,
+            smallDescr: item.smallDescr,
+            discount: item.discount,
+            discountEndTime: item.discountEndTime,
+            seeders: item.seeders,
+            leechers: item.leechers,
+            sizeBytes: item.sizeBytes,
+            imageList: item.imageList,
+            downloadStatus: item.downloadStatus,
+            collection: newCollectionState,
+          );
+        });
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              newCollectionState ? '已收藏"${item.name}"' : '已取消收藏"${item.name}"',
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : null,
+              ),
+            ),
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[800]
+                : null,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('收藏操作失败：$e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -703,6 +761,20 @@ class _HomePageState extends State<HomePage> {
                     ),
                     onSubmitted: (_) => _search(reset: true),
                   ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _onlyFavorites = !_onlyFavorites;
+                    });
+                    _search(reset: true);
+                  },
+                  icon: Icon(
+                    _onlyFavorites ? Icons.favorite : Icons.favorite_border,
+                    color: _onlyFavorites ? Theme.of(context).colorScheme.secondary : null,
+                  ),
+                  tooltip: _onlyFavorites ? '显示全部' : '仅显示收藏',
                 ),
                 const SizedBox(width: 8),
                 PopupMenuButton<String>(
@@ -825,50 +897,93 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                   final t = _items[i];
-                  return ListTile(
+                  return InkWell(
                     onTap: () => _onTorrentTap(t),
-                    title: Text(t.name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(t.smallDescr),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            if ((t.discount ?? '').toUpperCase() == 'FREE' ||
-                                (t.discount ?? '').toUpperCase() ==
-                                    'PERCENT_50')
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  t.name,
+                                  style: Theme.of(context).textTheme.titleMedium,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: _discountColor(t.discount!),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  _discountText(t.discount!, t.discountEndTime),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
+                                const SizedBox(height: 4),
+                                Text(
+                                  t.smallDescr,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).textTheme.bodySmall?.color,
                                   ),
                                 ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    if ((t.discount ?? '').toUpperCase() == 'FREE' ||
+                                        (t.discount ?? '').toUpperCase() ==
+                                            'PERCENT_50')
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _discountColor(t.discount!),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          _discountText(t.discount!, t.discountEndTime),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    const SizedBox(width: 6),
+                                    _buildSeedLeechInfo(t.seeders, t.leechers),
+                                    const SizedBox(width: 10),
+                                    Text(Formatters.dataFromBytes(t.sizeBytes)),
+                                    const Spacer(),
+                                    _buildDownloadStatusIcon(t.downloadStatus),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: () => _onToggleCollection(t),
+                                icon: Icon(
+                                  t.collection ? Icons.favorite : Icons.favorite_border,
+                                  color: t.collection ? Colors.red : null,
+                                ),
+                                tooltip: t.collection ? '取消收藏' : '收藏',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 40,
+                                  minHeight: 40,
+                                ),
                               ),
-                            const SizedBox(width: 6),
-                            _buildSeedLeechInfo(t.seeders, t.leechers),
-                            const SizedBox(width: 10),
-                            Text(Formatters.dataFromBytes(t.sizeBytes)),
-                            const Spacer(), // 推到最右边
-                            _buildDownloadStatusIcon(t.downloadStatus),
-                          ],
-                        ),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      onPressed: () => _onDownload(t),
-                      icon: const Icon(Icons.download_outlined),
-                      tooltip: '下载',
+                              IconButton(
+                                onPressed: () => _onDownload(t),
+                                icon: const Icon(Icons.download_outlined),
+                                tooltip: '下载',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 40,
+                                  minHeight: 40,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },

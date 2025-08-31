@@ -113,6 +113,7 @@ class ApiClient {
     String? keyword,
     int pageNumber = 1,
     int pageSize = 30,
+    int? onlyFav,
   }) async {
     final resp = await _dio.post(
       '/api/torrent/search',
@@ -123,6 +124,7 @@ class ApiClient {
         'pageNumber': pageNumber,
         'pageSize': pageSize,
         if (keyword != null && keyword.trim().isNotEmpty) 'keyword': keyword.trim(),
+        if (onlyFav != null) 'onlyFav': onlyFav,
       },
       options: Options(contentType: 'application/json'),
     );
@@ -167,6 +169,7 @@ class ApiClient {
             sizeBytes: item.sizeBytes,
             imageList: item.imageList,
             downloadStatus: status,
+            collection: item.collection,
           );
         }).toList();
         
@@ -232,6 +235,29 @@ class ApiClient {
     }
     return data['data'] as Map<String, dynamic>;
   }
+
+  // Toggle torrent collection status
+  Future<void> toggleCollection({required String id, required bool make}) async {
+    final formData = FormData.fromMap({
+      'id': id,
+      'make': make,
+    });
+    
+    final resp = await _dio.post(
+      '/api/torrent/collection',
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+    
+    final data = resp.data as Map<String, dynamic>;
+    if (data['code']?.toString() != '0') {
+      throw DioException(
+        requestOptions: resp.requestOptions,
+        response: resp,
+        error: data['message'] ?? 'Toggle collection failed',
+      );
+    }
+  }
 }
 
 class MemberProfile {
@@ -292,6 +318,7 @@ class TorrentItem {
   final int sizeBytes;
   final List<String> imageList;
   final DownloadStatus downloadStatus;
+  final bool collection; // 是否已收藏
 
   TorrentItem({
     required this.id,
@@ -304,10 +331,12 @@ class TorrentItem {
     required this.sizeBytes,
     required this.imageList,
     this.downloadStatus = DownloadStatus.none,
+    this.collection = false,
   });
 
   factory TorrentItem.fromJson(Map<String, dynamic> json, {DownloadStatus? downloadStatus}) {
     int parseInt(dynamic v) => v == null ? 0 : int.tryParse(v.toString()) ?? 0;
+    bool parseBool(dynamic v) => v == true || v.toString().toLowerCase() == 'true';
     final status = (json['status'] as Map<String, dynamic>?) ?? const {};
     final imgs = (json['imageList'] as List?)?.map((e) => e.toString()).toList() ?? const <String>[];
     return TorrentItem(
@@ -321,6 +350,7 @@ class TorrentItem {
       sizeBytes: parseInt(json['size']),
       imageList: imgs,
       downloadStatus: downloadStatus ?? DownloadStatus.none,
+      collection: parseBool(json['collection']),
     );
   }
 }
